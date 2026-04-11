@@ -2,6 +2,8 @@
 
 A Chrome extension that searches LinkedIn for posts matching a keyword across three modes — **Global Search**, **Messages**, and **Feed** — then automatically appends the unique post links into a Google Doc, skipping any duplicates from previous runs.
 
+Video Link -- https://youtu.be/LBD05pwSPQ0 
+
 ---
 
 ## What It Does
