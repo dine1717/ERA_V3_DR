@@ -1,0 +1,112 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f6f8fa;
+  color: #1f2328;
+}
+
+.container {
+  width: 340px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+label {
+  font-size: 12px;
+  color: #57606a;
+}
+
+input,
+select,
+button,
+textarea {
+  border-radius: 6px;
+  border: 1px solid #d0d7de;
+  padding: 8px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #0969da44;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+}
+
+button {
+  margin-top: 6px;
+  cursor: pointer;
+  background: #0969da;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+}
+
+button:disabled {
+  background: #8c959f;
+  cursor: not-allowed;
+}
+
+/* ── Pagination row ── */
+.pagination-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #eaf3ff;
+  border: 1px solid #b6d4fe;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.pagination-info {
+  flex: 1;
+  font-size: 11px;
+  color: #0550ae;
+  line-height: 1.4;
+}
+
+.reset-btn {
+  margin: 0;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #fff;
+  color: #0550ae;
+  border: 1px solid #b6d4fe;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.reset-btn:hover {
+  background: #dbeafe;
+}
+
+/* ── Status ── */
+.status {
+  min-height: 18px;
+  margin: 2px 0 0;
+  font-size: 12px;
+}
+
+.status.error {
+  color: #d1242f;
+}
+
+.status.success {
+  color: #1a7f37;
+}

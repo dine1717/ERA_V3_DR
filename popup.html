@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LinkedIn Link Collector</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>LinkedIn Link Collector</h1>
+
+      <label for="scanMode">Where to scan</label>
+      <select id="scanMode">
+        <option value="search">Search (Posts — sorted by date)</option>
+        <option value="messages">Messages (one person)</option>
+        <option value="feed">Feed (home posts)</option>
+      </select>
+
+      <label for="personName">Person name (messages only)</label>
+      <input id="personName" type="text" placeholder="e.g. John Doe" />
+
+      <label for="keyword">Keyword</label>
+      <input id="keyword" type="text" placeholder="e.g. vLLM, hiring, AI agent…" />
+
+      <!-- Pagination info row — shown only for search/feed modes -->
+      <div id="paginationRow" class="pagination-row">
+        <span id="paginationInfo" class="pagination-info">Next run starts from result #1</span>
+        <button id="resetOffsetBtn" class="reset-btn" title="Start over from result #1">↺ Reset</button>
+      </div>
+
+      <label for="linkedinTab">LinkedIn Tab</label>
+      <select id="linkedinTab"></select>
+
+      <label for="docUrl">Google Doc URL</label>
+      <input
+        id="docUrl"
+        type="text"
+        spellcheck="false"
+        placeholder="https://docs.google.com/document/d/..."
+      />
+
+      <label for="docsTab">Google Doc Tab</label>
+      <select id="docsTab"></select>
+
+      <label for="existingLinks">Extra links to skip (optional)</label>
+      <textarea
+        id="existingLinks"
+        rows="3"
+        placeholder="Optional — extension auto-skips links already saved in previous runs."
+      ></textarea>
+
+      <button id="runBtn">▶ Find and Add Links</button>
+      <p id="status" class="status"></p>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
