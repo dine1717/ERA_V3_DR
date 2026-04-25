@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Job Application Helper</title>
+<link rel="stylesheet" href="popup.css"/>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h2>Job Application Helper</h2>
+    <p>Search → Pick → Generate → Download .docx</p>
+  </div>
+  <button id="settingsToggleBtn" class="hbtn">Settings</button>
+</div>
+
+<!-- SETTINGS -->
+<div class="card" id="settingsCard">
+  <div class="card-title">Settings</div>
+  <label class="field-label">Gemini API Key</label>
+  <input type="password" id="apiKeyInput" placeholder="AIza..."/>
+  <div class="hint">Free key → aistudio.google.com → Get API Key</div>
+  <div style="margin-top:10px"></div>
+  <label class="field-label">Your Base Resume (plain text)</label>
+  <textarea id="resumeInput" rows="8" placeholder="Paste your full resume here..."></textarea>
+  <button class="save-btn" id="saveBtn">Save Settings</button>
+  <div class="saved" id="savedMsg">Saved!</div>
+</div>
+
+<!-- STEP 1: SEARCH -->
+<div class="card" id="searchCard">
+  <div class="steps-row">
+    <div class="step-dot active" id="dot1">1</div>
+    <div class="step-line" id="line1"></div>
+    <div class="step-dot" id="dot2">2</div>
+    <div class="step-line" id="line2"></div>
+    <div class="step-dot" id="dot3">3</div>
+  </div>
+
+  <div class="card-title">Step 1 — Search for jobs</div>
+
+  <!-- Platform -->
+  <div class="platform-row">
+    <button class="platform-btn active" id="plLinkedIn">LinkedIn</button>
+    <button class="platform-btn" id="plNaukri">Naukri</button>
+    <button class="platform-btn" id="plIndeed">Indeed</button>
+    <button class="platform-btn" id="plGlassdoor">Glassdoor</button>
+  </div>
+
+  <!-- Date filter -->
+  <div class="filter-row">
+    <span class="filter-label">Posted:</span>
+    <button class="filter-btn active" id="f24h">Last 24h</button>
+    <button class="filter-btn" id="f1w">Last week</button>
+    <button class="filter-btn" id="fAny">Any time</button>
+  </div>
+
+  <!-- Search input -->
+  <div class="search-row">
+    <input type="text" id="jobRoleInput" class="search-input" placeholder="e.g. Data Engineer, Python Developer..."/>
+    <button class="search-btn" id="searchBtn">Search</button>
+  </div>
+  <div class="status-bar" id="statusBar">Enter a role and click Search</div>
+</div>
+
+<!-- STEP 2: JOB LIST -->
+<div class="card" id="jobListCard">
+  <div class="card-title">Step 2 — Pick a job <span id="jobCountLabel" style="font-weight:400;color:#aaa;text-transform:none"></span></div>
+  <div class="job-list" id="jobList"></div>
+  <div style="margin-top:8px;font-size:11px;color:#888">
+    <span style="color:#16a34a;font-weight:700">Green border</span> = latest posting. Click any job to select it.
+  </div>
+</div>
+
+<!-- STEP 3: GENERATE -->
+<div class="card" id="generateCard">
+  <div class="card-title">Step 3 — Generate</div>
+  <div class="selected-job-banner" id="selectedJobBanner">
+    <strong id="selectedJobTitle">No job selected</strong>
+    <span id="selectedJobCompany"></span>
+  </div>
+  <div class="mode-row">
+    <button class="mode-btn active" id="btnCover">Cover Letter</button>
+    <button class="mode-btn" id="btnResume">Updated Resume</button>
+  </div>
+  <button class="run-btn" id="runBtn">Generate with AI</button>
+</div>
+
+<!-- REASONING CHAIN -->
+<div class="card" id="chainCard">
+  <div class="card-title">Agent Reasoning Chain</div>
+  <div class="terminal" id="terminal"></div>
+</div>
+
+<!-- SCORE -->
+<div class="card" id="scoreCard">
+  <div class="card-title">Resume Match Score</div>
+  <div class="score-row">
+    <div class="score-num" id="scoreNum">0%</div>
+    <div class="bar-wrap"><div class="bar-fill" id="barFill"></div></div>
+  </div>
+  <div class="hint">Already in your resume</div>
+  <div class="kw-row" id="kwPresent"></div>
+  <div class="hint" style="margin-top:6px">Missing — added to output</div>
+  <div class="kw-row" id="kwMissing"></div>
+</div>
+
+<!-- OUTPUT -->
+<div class="card" id="outputCard">
+  <div class="card-title" id="outputTitle">Generated Output</div>
+  <div class="output-text" id="outputText"></div>
+  <div class="action-row">
+    <button class="copy-btn" id="copyBtn">Copy</button>
+    <button class="download-btn" id="downloadBtn">&#8659; Download .docx</button>
+  </div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>

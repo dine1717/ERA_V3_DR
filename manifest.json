@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Job Application Helper",
+  "version": "2.0",
+  "description": "Search jobs on LinkedIn/Naukri/Indeed, pick one, get AI-generated cover letter or resume",
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "host_permissions": [
+    "https://generativelanguage.googleapis.com/*",
+    "https://www.linkedin.com/*",
+    "https://www.naukri.com/*",
+    "https://in.indeed.com/*",
+    "https://www.indeed.com/*",
+    "https://www.glassdoor.co.in/*",
+    "https://www.glassdoor.com/*",
+    "https://internshala.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": { "48": "icons/icon48.png" }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.linkedin.com/*",
+        "https://www.naukri.com/*",
+        "https://in.indeed.com/*",
+        "https://www.indeed.com/*",
+        "https://www.glassdoor.co.in/*",
+        "https://www.glassdoor.com/*",
+        "https://internshala.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
