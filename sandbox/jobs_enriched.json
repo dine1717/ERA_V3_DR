@@ -1,0 +1,278 @@
+[
+  {
+    "company": "Google",
+    "culture_notes": "Values innovation, emphasizes Scikit-learn, and supports a collaborative environment.",
+    "description": "",
+    "interview_questions": [
+      "How do you version control models and datasets?",
+      "Describe an end-to-end ML pipeline you designed",
+      "How do you select the right evaluation metric?",
+      "What is A/B testing for ML models?",
+      "Explain gradient descent and its variants (SGD, Adam)"
+    ],
+    "keywords": [
+      "Scikit-learn",
+      "NLP",
+      "NumPy",
+      "Deep Learning",
+      "SQL"
+    ],
+    "location": "Bengaluru, Karnataka, India",
+    "match_score": 97,
+    "salary_estimation": "$80k - $186k",
+    "source": "linkedin",
+    "summary": "Software Engineer, AI/ML at Google in Bengaluru, Karnataka, India. Key skills: Scikit-learn, NLP, NumPy.",
+    "title": "Software Engineer, AI/ML",
+    "url": "https://in.linkedin.com/jobs/view/software-engineer-ai-ml-at-google-4390913792?position=1&pageNum=0&refId=YO69S0WZGQEGZKbmwMMMbQ%3D%3D&trackingId=9Ok3%2BbmfhpXTTNCVtQdruQ%3D%3D"
+  },
+  {
+    "company": "Deloitte",
+    "culture_notes": "Values innovation, emphasizes dbt, and supports a collaborative environment.",
+    "description": "",
+    "interview_questions": [
+      "How do you optimize a slow SQL query?",
+      "How do you handle data quality issues in a pipeline?",
+      "Design a data pipeline for processing 10M events per day",
+      "Explain batch vs stream processing",
+      "What is the difference between star schema and snowflake schema?"
+    ],
+    "keywords": [
+      "dbt",
+      "Tableau",
+      "Airflow",
+      "PostgreSQL",
+      "ETL",
+      "Kafka"
+    ],
+    "location": "Bengaluru, Karnataka, India",
+    "match_score": 82,
+    "salary_estimation": "$77k - $158k",
+    "source": "linkedin",
+    "summary": "Data Scientist at Deloitte in Bengaluru, Karnataka, India. Key skills: dbt, Tableau, Airflow.",
+    "title": "Data Scientist",
+    "url": "https://in.linkedin.com/jobs/view/data-scientist-at-deloitte-4398849226?position=2&pageNum=0&refId=YO69S0WZGQEGZKbmwMMMbQ%3D%3D&trackingId=t8VuKS9PfbPoRa1keV5ZYA%3D%3D"
+  },
+  {
+    "company": "Ujjivan Small Finance Bank",
+    "culture_notes": "Values innovation, emphasizes Tableau, and supports a collaborative environment.",
+    "description": "",
+    "interview_questions": [
+      "What is data partitioning and why is it important?",
+      "Explain batch vs stream processing",
+      "How do you optimize a slow SQL query?",
+      "What is the difference between star schema and snowflake schema?",
+      "Design a data pipeline for processing 10M events per day"
+    ],
+    "keywords": [
+      "Tableau",
+      "Python",
+      "Spark",
+      "PostgreSQL",
+      "Kafka",
+      "dbt",
+      "Data Modeling",
+      "Redshift"
+    ],
+    "location": "Bangalore Urban, Karnataka, India",
+    "match_score": 74,
+    "salary_estimation": "$72k - $176k",
+    "source": "linkedin",
+    "summary": "Data Scientist at Ujjivan Small Finance Bank in Bangalore Urban, Karnataka, India. Key skills: Tableau, Python, Spark.",
+    "title": "Data Scientist",
+    "url": "https://in.linkedin.com/jobs/view/data-scientist-at-ujjivan-small-finance-bank-4402340931?position=3&pageNum=0&refId=YO69S0WZGQEGZKbmwMMMbQ%3D%3D&trackingId=1bMCwXNmeO6osUZGq9Sd%2BQ%3D%3D"
+  },
+  {
+    "company": "hackajob",
+    "culture_notes": "Values innovation, emphasizes Deep Learning, and supports a collaborative environment.",
+    "description": "",
+    "interview_questions": [
+      "How do you handle ethical considerations in AI systems?",
+      "Describe a production AI system you have built",
+      "What is explainability in AI and why does it matter?",
+      "How do you keep up with the rapidly changing AI landscape?"
+    ],
+    "keywords": [
+      "Deep Learning",
+      "MLOps",
+      "LLM",
+      "Reinforcement Learning",
+      "Transformers",
+      "Docker",
+      "TensorFlow",
+      "PyTorch"
+    ],
+    "location": "Bengaluru, Karnataka, India",
+    "match_score": 72,
+    "salary_estimation": "$90k - $152k",
+    "source": "linkedin",
+    "summary": "Software Engineer Agentic AI at hackajob in Bengaluru, Karnataka, India. Key skills: Deep Learning, MLOps, LLM.",
+    "title": "Software Engineer Agentic AI",
+    "url": "https://in.linkedin.com/jobs/view/software-engineer-agentic-ai-at-hackajob-4398763438?position=4&pageNum=0&refId=YO69S0WZGQEGZKbmwMMMbQ%3D%3D&trackingId=yPvl39BMdWS%2FFtM8V1csHw%3D%3D"
+  },
+  {
+    "company": "Apple",
+    "culture_notes": "Values innovation, emphasizes Scikit-learn, and supports a collaborative environment.",
+    "description": "",
+    "interview_questions": [
+      "What evaluation metrics do you use and when?",
+      "How do you handle imbalanced datasets?",
+      "Walk through your process for taking a model from prototype to production",
+      "How do you handle model drift in production?",
+      "Describe a feature engineering pipeline you have built"
+    ],
+    "keywords": [
+      "Scikit-learn",
+      "Docker",
+      "PyTorch",
+      "Deep Learning",
+      "TensorFlow",
+      "NLP"
+    ],
+    "location": "Bengaluru, Karnataka, India",
+    "match_score": 65,
+    "salary_estimation": "$84k - $182k",
+    "source": "linkedin",
+    "summary": "AI/Machine Learning Engineer at Apple in Bengaluru, Karnataka, India. Key skills: Scikit-learn, Docker, PyTorch.",
+    "title": "AI/Machine Learning Engineer",
+    "url": "https://in.linkedin.com/jobs/view/ai-machine-learning-engineer-at-apple-4387195946?position=5&pageNum=0&refId=YO69S0WZGQEGZKbmwMMMbQ%3D%3D&trackingId=lVW15aTHwGkTpMWx13%2F3qg%3D%3D"
+  },
+  {
+    "company": "Revecore",
+    "culture_notes": "Values innovation, emphasizes Transformers, and supports a collaborative environment.",
+    "description": "Senior AI Engineer\u00a0Start your next chapter at\u00a0Revecore! For over 25 years,\u00a0Revecore\u00a0has been at the forefront of specialized claims management, helping healthcare providers recover meaningful revenue to enhance quality patient care...",
+    "interview_questions": [
+      "Describe a production AI system you have built",
+      "How do you handle ethical considerations in AI systems?",
+      "Explain supervised vs unsupervised vs reinforcement learning",
+      "How do you keep up with the rapidly changing AI landscape?"
+    ],
+    "keywords": [
+      "Transformers",
+      "PyTorch",
+      "Reinforcement Learning",
+      "LLM",
+      "Deep Learning",
+      "Docker",
+      "SQL",
+      "MLOps"
+    ],
+    "location": "USA",
+    "match_score": 88,
+    "salary_estimation": "$105k - $197k",
+    "source": "jobicy",
+    "summary": "Senior AI Engineer at Revecore in USA. Key skills: Transformers, PyTorch, Reinforcement Learning.",
+    "title": "Senior AI Engineer",
+    "url": "https://jobicy.com/jobs/141792-senior-ai-engineer-2"
+  },
+  {
+    "company": "Revecore",
+    "culture_notes": "Values innovation, emphasizes TensorFlow, and supports a collaborative environment.",
+    "description": "Team Lead, AI Engineering\u00a0Start your next chapter at\u00a0Revecore! For over 25 years,\u00a0Revecore\u00a0has been at the forefront of specialized claims management, helping healthcare providers recover meaningful revenue to enhance quality patient...",
+    "interview_questions": [
+      "What is explainability in AI and why does it matter?",
+      "Explain supervised vs unsupervised vs reinforcement learning",
+      "How do you handle ethical considerations in AI systems?",
+      "Describe a production AI system you have built",
+      "How do you keep up with the rapidly changing AI landscape?"
+    ],
+    "keywords": [
+      "TensorFlow",
+      "LLM",
+      "Reinforcement Learning",
+      "Docker",
+      "SQL",
+      "Deep Learning"
+    ],
+    "location": "USA",
+    "match_score": 86,
+    "salary_estimation": "$110k - $171k",
+    "source": "jobicy",
+    "summary": "Team Lead, AI Engineering at Revecore in USA. Key skills: TensorFlow, LLM, Reinforcement Learning.",
+    "title": "Team Lead, AI Engineering",
+    "url": "https://jobicy.com/jobs/141791-team-lead-ai-engineering"
+  },
+  {
+    "company": "Sonatus",
+    "culture_notes": "Values innovation, emphasizes Deep Learning, and supports a collaborative environment.",
+    "description": "At Sonatus, we\u2019re driving the transformation to AI-enabled software-defined vehicles. Traditional automotive software methods can\u2019t keep pace with consumer expectations shaped by the mobile industry\u2014where features evolve rapidly, update seamlessly,...",
+    "interview_questions": [
+      "Describe a production AI system you have built",
+      "How do you keep up with the rapidly changing AI landscape?",
+      "Explain supervised vs unsupervised vs reinforcement learning",
+      "How do you handle ethical considerations in AI systems?",
+      "What is explainability in AI and why does it matter?"
+    ],
+    "keywords": [
+      "Deep Learning",
+      "TensorFlow",
+      "LLM",
+      "Computer Vision",
+      "Kubernetes",
+      "PyTorch"
+    ],
+    "location": "Germany",
+    "match_score": 97,
+    "salary_estimation": "$98k - $190k",
+    "source": "jobicy",
+    "summary": "Senior Staff Customer Engineer \u2013 Automotive AI Engineer at Sonatus in Germany. Key skills: Deep Learning, TensorFlow, LLM.",
+    "title": "Senior Staff Customer Engineer \u2013 Automotive AI Engineer",
+    "url": "https://jobicy.com/jobs/141544-senior-staff-customer-engineer-automotive-ai-engineer"
+  },
+  {
+    "company": "Mindrift",
+    "culture_notes": "Values innovation, emphasizes Linux, and supports a collaborative environment.",
+    "description": "Please submit your CV in English and indicate your level of English proficiency. Mindrift connects specialists with project-based AI opportunities for leading tech companies, focused on testing, evaluating, and improving...",
+    "interview_questions": [
+      "How do you write unit tests in Python? What frameworks do you use?",
+      "How do you handle database migrations in Django/Flask?",
+      "Describe how you would design a REST API for a large-scale application",
+      "What is the difference between a list and a tuple? When would you use each?"
+    ],
+    "keywords": [
+      "Linux",
+      "Redis",
+      "PostgreSQL",
+      "AWS",
+      "Flask",
+      "Git",
+      "REST API",
+      "Docker"
+    ],
+    "location": "Romania",
+    "match_score": 88,
+    "salary_estimation": "$128k - $189k",
+    "source": "jobicy",
+    "summary": "Mechanical Engineer & Python Expert \u2013 Freelance AI Trainer at Mindrift in Romania. Key skills: Linux, Redis, PostgreSQL.",
+    "title": "Mechanical Engineer & Python Expert \u2013 Freelance AI Trainer",
+    "url": "https://jobicy.com/jobs/142972-mechanical-engineer-python-expert-freelance-ai-trainer-2"
+  },
+  {
+    "company": "Kubikware",
+    "culture_notes": "Values innovation, emphasizes Python, and supports a collaborative environment.",
+    "description": "We are Kubikware\u2122, a digital agency with 20+ years of experience designing and developing web and mobile platforms, as well as video games, AR/VR apps, and AI/ML. We are headquartered...",
+    "interview_questions": [
+      "Explain the Python GIL and how it affects multi-threading",
+      "What is the difference between a list and a tuple? When would you use each?",
+      "How do you write unit tests in Python? What frameworks do you use?",
+      "What are Python decorators and give a real-world use case",
+      "Describe how you would design a REST API for a large-scale application"
+    ],
+    "keywords": [
+      "Python",
+      "Celery",
+      "AWS",
+      "Redis",
+      "REST API",
+      "Git",
+      "Docker",
+      "CI/CD"
+    ],
+    "location": "LATAM",
+    "match_score": 95,
+    "salary_estimation": "$100k - $192k",
+    "source": "jobicy",
+    "summary": "Python & React Engineer with AI (Remote, Latam) at Kubikware in LATAM. Key skills: Python, Celery, AWS.",
+    "title": "Python & React Engineer with AI (Remote, Latam)",
+    "url": "https://jobicy.com/jobs/142967-python-react-engineer-with-ai-remote-latam"
+  }
+]

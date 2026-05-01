@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Researcher</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --bg2: #12121a;
+            --bg3: #1a1a26;
+            --bg4: #22222e;
+            --text: #e8e6f0;
+            --text2: #9896a8;
+            --accent: #6c63ff;
+            --accent2: #8b7fff;
+            --accent-glow: rgba(108,99,255,0.15);
+            --green: #34d399;
+            --green-bg: rgba(52,211,153,0.1);
+            --orange: #fb923c;
+            --orange-bg: rgba(251,146,60,0.1);
+            --red: #f87171;
+            --cyan: #22d3ee;
+            --cyan-bg: rgba(34,211,238,0.1);
+            --border: #2a2a38;
+            --radius: 12px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+        .header { background:var(--bg2); border-bottom:1px solid var(--border); padding:20px 40px; display:flex; align-items:center; justify-content:space-between; }
+        .header h1 { font-size:22px; font-weight:700; background:linear-gradient(135deg,var(--accent),var(--green)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .header .subtitle { color:var(--text2); font-size:13px; }
+        .header-right { display:flex; gap:12px; align-items:center; }
+
+        .main { max-width:1200px; margin:0 auto; padding:30px 24px; }
+
+        /* Search */
+        .search-section { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin-bottom:20px; }
+        .search-section h2 { font-size:16px; font-weight:600; margin-bottom:16px; }
+        .search-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+        .field { display:flex; flex-direction:column; gap:6px; flex:1; min-width:140px; }
+        .field label { font-size:11px; color:var(--text2); font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
+        .field input { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text); font-size:14px; font-family:inherit; outline:none; transition:border 0.2s; }
+        .field input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+
+        .btn { padding:10px 22px; border-radius:8px; border:none; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:8px; white-space:nowrap; }
+        .btn-primary { background:var(--accent); color:#fff; }
+        .btn-primary:hover { background:var(--accent2); transform:translateY(-1px); }
+        .btn-primary:disabled { opacity:0.5; cursor:wait; transform:none; }
+        .btn-secondary { background:var(--bg3); color:var(--text); border:1px solid var(--border); }
+        .btn-secondary:hover { background:var(--bg4); }
+        .btn-danger { background:rgba(248,113,113,0.1); color:var(--red); border:1px solid rgba(248,113,113,0.2); }
+        .btn-success { background:var(--green-bg); color:var(--green); border:1px solid rgba(52,211,153,0.2); }
+
+        .status-bar { padding:14px 20px; border-radius:8px; margin-top:16px; font-size:13px; display:none; align-items:center; gap:10px; }
+        .status-bar.info { display:flex; background:var(--accent-glow); color:var(--accent2); border:1px solid rgba(108,99,255,0.2); }
+        .status-bar.success { display:flex; background:var(--green-bg); color:var(--green); border:1px solid rgba(52,211,153,0.2); }
+        .status-bar.error { display:flex; background:rgba(248,113,113,0.1); color:var(--red); border:1px solid rgba(248,113,113,0.2); }
+        .spinner { width:16px; height:16px; border:2px solid transparent; border-top-color:currentColor; border-radius:50%; animation:spin 0.6s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* MCP Tool Calls Panel */
+        .tool-panel { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:20px; }
+        .tool-panel h2 { font-size:14px; font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+        .tool-panel h2 .dot { width:8px; height:8px; border-radius:50%; background:var(--green); display:inline-block; animation:pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+        .tool-log { max-height:300px; overflow-y:auto; }
+        .tool-entry { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-bottom:8px; font-size:12px; animation:slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+        .tool-entry .tool-header { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+        .tool-entry .tool-name { font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--cyan); font-size:13px; }
+        .tool-entry .tool-time { color:var(--text2); font-size:11px; margin-left:auto; }
+        .tool-entry .tool-duration { color:var(--orange); font-size:11px; font-family:'JetBrains Mono',monospace; }
+        .tool-entry .tool-args { color:var(--text2); font-family:'JetBrains Mono',monospace; font-size:11px; margin-bottom:4px; padding:4px 8px; background:var(--bg); border-radius:4px; }
+        .tool-entry .tool-result { color:var(--green); font-size:12px; }
+        .tool-type-badge { padding:2px 8px; border-radius:4px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+        .badge-internet { background:var(--cyan-bg); color:var(--cyan); }
+        .badge-file { background:var(--orange-bg); color:var(--orange); }
+        .badge-ui { background:var(--accent-glow); color:var(--accent2); }
+        .badge-llm { background:var(--green-bg); color:var(--green); }
+        .tool-empty { color:var(--text2); text-align:center; padding:20px; font-size:13px; }
+
+        /* Tabs */
+        .tabs { display:flex; gap:2px; background:var(--bg3); border-radius:10px; padding:3px; margin-bottom:24px; }
+        .tab { padding:10px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; color:var(--text2); transition:all 0.2s; flex:1; text-align:center; }
+        .tab.active { background:var(--accent); color:#fff; }
+        .tab:hover:not(.active) { color:var(--text); }
+        .tab-content { display:none; }
+        .tab-content.active { display:block; }
+
+        /* Stats */
+        .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:24px; }
+        .stat-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+        .stat-label { font-size:11px; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+        .stat-value { font-size:28px; font-weight:700; color:var(--accent2); }
+
+        /* Cards */
+        .job-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:14px; transition:border-color 0.2s; }
+        .job-card:hover { border-color:var(--accent); }
+        .job-title { font-size:16px; font-weight:600; margin-bottom:8px; }
+        .job-meta { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+        .badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:500; }
+        .badge-company { background:var(--accent-glow); color:var(--accent2); }
+        .badge-location { background:var(--green-bg); color:var(--green); }
+        .badge-source { background:var(--orange-bg); color:var(--orange); }
+        .badge-keyword { background:var(--bg4); color:var(--text); border:1px solid var(--border); margin:2px; }
+        .job-desc { font-size:13px; color:var(--text2); line-height:1.5; margin-bottom:8px; }
+        .job-link { color:var(--accent2); font-size:11px; text-decoration:none; font-family:'JetBrains Mono',monospace; word-break:break-all; }
+        .job-link:hover { text-decoration:underline; }
+
+        /* Charts */
+        .chart-container { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:20px; }
+        .chart-container h3 { font-size:15px; margin-bottom:16px; }
+
+        /* Interview */
+        .interview-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:14px; }
+        .interview-card h4 { font-size:15px; font-weight:600; margin-bottom:4px; }
+        .interview-company { font-size:12px; color:var(--text2); margin-bottom:12px; }
+        .question { padding:10px 0; font-size:14px; color:var(--text); border-bottom:1px solid var(--border); line-height:1.6; }
+        .question:last-child { border-bottom:none; }
+        .question::before { content:"Q"; display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; background:var(--accent-glow); color:var(--accent2); border-radius:6px; font-size:11px; font-weight:700; margin-right:10px; flex-shrink:0; }
+
+        /* Files */
+        .file-section { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+        .file-content { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:16px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text2); white-space:pre-wrap; max-height:400px; overflow-y:auto; margin-top:12px; }
+
+        .empty-state { text-align:center; padding:60px 20px; color:var(--text2); }
+        .empty-state .icon { font-size:48px; margin-bottom:16px; }
+        .empty-state h3 { color:var(--text); margin-bottom:8px; }
+
+        @media (max-width:768px) {
+            .header { padding:16px 20px; flex-direction:column; gap:10px; }
+            .main { padding:20px 12px; }
+            .search-row { flex-direction:column; }
+            .field { min-width:100%; }
+            .tabs { flex-wrap:wrap; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1>Job Researcher</h1>
+        <div class="subtitle">MCP Server &rarr; Internet Search &rarr; File Save &rarr; UI Dashboard</div>
+    </div>
+    <div class="header-right">
+        <button class="btn btn-secondary" onclick="newSearch()">New Search</button>
+    </div>
+</div>
+
+<div class="main">
+
+    <!-- Search -->
+    <div class="search-section">
+        <h2>Search Jobs</h2>
+        <div class="search-row">
+            <div class="field" style="flex:2">
+                <label>Job Keyword</label>
+                <input type="text" id="queryInput" placeholder="Python developer, ML Engineer, React..." autofocus>
+            </div>
+            <div class="field">
+                <label>Location</label>
+                <input type="text" id="locationInput" placeholder="India, Bangalore..." value="India">
+            </div>
+            <div class="field" style="flex:0.4; min-width:70px;">
+                <label>Count</label>
+                <input type="number" id="countInput" value="5" min="1" max="20">
+            </div>
+            <button class="btn btn-primary" id="searchBtn" onclick="doSearch()">Search Jobs</button>
+        </div>
+        <div class="search-row" style="margin-top:12px">
+            <button class="btn btn-success" id="analyzeBtn" onclick="doAnalyzeAndSave()" style="display:none">Analyze &amp; Save to File</button>
+            <button class="btn btn-primary" id="dashboardBtn" onclick="doDashboard()" style="display:none">Show Dashboard</button>
+        </div>
+        <div class="status-bar" id="statusBar">
+            <div class="spinner" id="statusSpinner"></div>
+            <span id="statusText"></span>
+        </div>
+    </div>
+
+    <!-- MCP Tool Calls Panel -->
+    <div class="tool-panel" id="toolPanel">
+        <h2><span class="dot"></span> MCP Tool Calls</h2>
+        <div class="tool-log" id="toolLog">
+            <div class="tool-empty">No tool calls yet. Search for jobs to see the MCP pipeline in action.</div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboardSection" style="display:none">
+        <div class="tabs" id="tabBar">
+            <div class="tab active" data-tab="overview" onclick="switchTab('overview')">Overview</div>
+            <div class="tab" data-tab="listings" onclick="switchTab('listings')">Listings</div>
+            <div class="tab" data-tab="keywords" onclick="switchTab('keywords')">Keywords</div>
+            <div class="tab" data-tab="interview" onclick="switchTab('interview')">Interview Prep</div>
+            <div class="tab" data-tab="files" onclick="switchTab('files')">Saved Files</div>
+        </div>
+
+        <div class="tab-content active" id="tab-overview">
+            <div class="stats-row" id="statsRow"></div>
+            <div class="chart-container">
+                <h3>Jobs by Source</h3>
+                <canvas id="sourceChart" height="250"></canvas>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-listings">
+            <div id="jobsList"></div>
+        </div>
+
+        <div class="tab-content" id="tab-keywords">
+            <div id="keywordBadges" style="margin-bottom:20px"></div>
+            <div class="chart-container">
+                <h3>Skill Frequency</h3>
+                <canvas id="keywordChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-interview">
+            <div id="interviewList"></div>
+        </div>
+
+        <div class="tab-content" id="tab-files">
+            <div class="file-section">
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px">
+                    <h3 style="flex:1; font-size:15px">Saved Job Data (sandbox/jobs_data.txt)</h3>
+                    <button class="btn btn-secondary" onclick="loadFile()">Refresh</button>
+                    <button class="btn btn-danger" onclick="deleteFile()">Delete</button>
+                </div>
+                <div class="file-content" id="fileContent">Click "Refresh" to load file contents.</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="emptyState" class="empty-state">
+        <div class="icon">🔍</div>
+        <h3>Search for Jobs</h3>
+        <p>Enter a keyword and click "Search Jobs" to start the MCP pipeline.</p>
+    </div>
+</div>
+
+<script>
+let currentJobs = [];
+let sourceChartInst = null;
+let keywordChartInst = null;
+
+function showStatus(msg, type='info') {
+    const bar = document.getElementById('statusBar');
+    bar.className = `status-bar ${type}`;
+    document.getElementById('statusText').textContent = msg;
+    document.getElementById('statusSpinner').style.display = type === 'info' ? 'block' : 'none';
+}
+function hideStatus() { document.getElementById('statusBar').className = 'status-bar'; }
+
+function switchTab(t) {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+    document.querySelector(`.tab[data-tab="${t}"]`).classList.add('active');
+    document.getElementById(`tab-${t}`).classList.add('active');
+}
+
+// --- Tool Call Log ---
+function getToolBadge(name) {
+    if (name === 'search_jobs') return '<span class="tool-type-badge badge-internet">Internet</span>';
+    if (name.includes('file') || name.includes('save') || name.includes('read') || name.includes('delete') || name.includes('append'))
+        return '<span class="tool-type-badge badge-file">File CRUD</span>';
+    if (name.includes('dashboard')) return '<span class="tool-type-badge badge-ui">UI</span>';
+    if (name.includes('enrich')) return '<span class="tool-type-badge badge-llm">Enrich</span>';
+    return '<span class="tool-type-badge" style="background:var(--bg4);color:var(--text2)">Tool</span>';
+}
+
+function addToolEntry(entry) {
+    const log = document.getElementById('toolLog');
+    // Remove empty message
+    const empty = log.querySelector('.tool-empty');
+    if (empty) empty.remove();
+
+    const div = document.createElement('div');
+    div.className = 'tool-entry';
+    div.innerHTML = `
+        <div class="tool-header">
+            ${getToolBadge(entry.tool)}
+            <span class="tool-name">${esc(entry.tool)}()</span>
+            <span class="tool-duration">${entry.duration_ms}ms</span>
+            <span class="tool-time">${esc(entry.timestamp)}</span>
+        </div>
+        <div class="tool-args">${esc(JSON.stringify(entry.args))}</div>
+        <div class="tool-result">→ ${esc(entry.result)}</div>
+    `;
+    log.prepend(div);
+    log.scrollTop = 0;
+}
+
+async function refreshToolLog() {
+    try {
+        const resp = await fetch('/api/tool_log');
+        const data = await resp.json();
+        const log = document.getElementById('toolLog');
+        log.innerHTML = '';
+        if (!data.log.length) {
+            log.innerHTML = '<div class="tool-empty">No tool calls yet. Search for jobs to see the MCP pipeline in action.</div>';
+            return;
+        }
+        // Show newest first
+        data.log.slice().reverse().forEach(entry => {
+            const div = document.createElement('div');
+            div.className = 'tool-entry';
+            div.innerHTML = `
+                <div class="tool-header">
+                    ${getToolBadge(entry.tool)}
+                    <span class="tool-name">${esc(entry.tool)}()</span>
+                    <span class="tool-duration">${entry.duration_ms}ms</span>
+                    <span class="tool-time">${esc(entry.timestamp)}</span>
+                </div>
+                <div class="tool-args">${esc(JSON.stringify(entry.args))}</div>
+                <div class="tool-result">→ ${esc(entry.result)}</div>
+            `;
+            log.appendChild(div);
+        });
+    } catch(e) {}
+}
+
+// --- TOOL 1: Search ---
+async function doSearch() {
+    const query = document.getElementById('queryInput').value.trim();
+    const location = document.getElementById('locationInput').value.trim();
+    const count = parseInt(document.getElementById('countInput').value) || 5;
+    if (!query) { showStatus('Enter a job keyword first', 'error'); return; }
+
+    document.getElementById('searchBtn').disabled = true;
+    showStatus(`Calling search_jobs("${query}", "${location}", ${count})...`);
+
+    try {
+        const resp = await fetch('/api/search', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ query, location, num_results: count })
+        });
+        const data = await resp.json();
+        await refreshToolLog();
+
+        if (!data.jobs || !data.jobs.length) {
+            showStatus(`No jobs found for "${query}". Try different keywords.`, 'error');
+            return;
+        }
+        currentJobs = data.jobs;
+        showStatus(`Found ${data.jobs.length} jobs! Click "Analyze & Save" next.`, 'success');
+        document.getElementById('analyzeBtn').style.display = 'inline-flex';
+        renderJobsList(currentJobs);
+        document.getElementById('dashboardSection').style.display = 'block';
+        document.getElementById('emptyState').style.display = 'none';
+        switchTab('listings');
+    } catch(err) {
+        showStatus(`Search failed: ${err.message}`, 'error');
+    } finally {
+        document.getElementById('searchBtn').disabled = false;
+    }
+}
+
+// --- TOOL 2: Enrich + Save ---
+async function doAnalyzeAndSave() {
+    if (!currentJobs.length) return;
+    document.getElementById('analyzeBtn').disabled = true;
+    showStatus('Calling enrich_jobs() + save_jobs_to_file()...');
+
+    try {
+        const resp = await fetch('/api/save', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ jobs: currentJobs })
+        });
+        const data = await resp.json();
+        await refreshToolLog();
+
+        currentJobs = data.jobs || currentJobs;
+        showStatus(`Saved ${currentJobs.length} enriched jobs! Generating dashboard...`, 'success');
+        document.getElementById('dashboardBtn').style.display = 'inline-flex';
+        renderJobsList(currentJobs);
+        // Automatically load dashboard
+        doDashboard();
+    } catch(err) {
+        showStatus(`Save failed: ${err.message}`, 'error');
+    } finally {
+        document.getElementById('analyzeBtn').disabled = false;
+    }
+}
+
+// --- TOOL 3: Dashboard ---
+async function doDashboard() {
+    if (!currentJobs.length) return;
+    document.getElementById('dashboardBtn').disabled = true;
+    showStatus('Calling show_job_dashboard()...');
+
+    try {
+        const resp = await fetch('/api/dashboard', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ jobs: currentJobs })
+        });
+        const data = await resp.json();
+        await refreshToolLog();
+
+        renderDashboard(data);
+        showStatus('Dashboard ready!', 'success');
+        switchTab('overview');
+    } catch(err) {
+        showStatus(`Dashboard failed: ${err.message}`, 'error');
+    } finally {
+        document.getElementById('dashboardBtn').disabled = false;
+    }
+}
+
+// --- Renderers ---
+function renderJobsList(jobs) {
+    document.getElementById('jobsList').innerHTML = jobs.map((job, i) => `
+        <div class="job-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div class="job-title">${i+1}. ${esc(job.title||'N/A')}</div>
+                ${job.match_score ? `<div title="Match Score" style="background:var(--accent-glow); color:var(--accent2); padding:4px 10px; border-radius:20px; font-size:12px; font-weight:700;">${job.match_score}% Match</div>` : ''}
+            </div>
+            <div class="job-meta">
+                <span class="badge badge-company">${esc(job.company||'Unknown')}</span>
+                <span class="badge badge-location">${esc(job.location||'N/A')}</span>
+                ${job.salary_estimation ? `<span class="badge" style="background:var(--green-bg); color:var(--green);"><span style="margin-right:4px">💰</span>${esc(job.salary_estimation)}</span>` : ''}
+                <span class="badge badge-source">${esc(job.source||'')}</span>
+            </div>
+            ${job.summary ? `<div class="job-desc" style="color:var(--text); font-weight:500;">${esc(job.summary)}</div>` : ''}
+            ${job.description ? `<div class="job-desc">${esc(job.description.slice(0,250))}...</div>` : ''}
+            ${job.culture_notes ? `<div class="job-desc" style="background:var(--bg3); padding:8px 12px; border-radius:6px; border-left:3px solid var(--accent2); margin-top:8px;"><em>Culture/Company Info:</em> ${esc(job.culture_notes)}</div>` : ''}
+            ${job.keywords ? `<div style="margin:8px 0">${arrify(job.keywords).map(k=>`<span class="badge badge-keyword">${esc(k)}</span>`).join(' ')}</div>` : ''}
+            ${job.url ? `<a class="job-link" href="${esc(job.url)}" target="_blank">${esc(job.url.slice(0,70))}</a>` : ''}
+        </div>
+    `).join('');
+}
+
+function renderDashboard(data) {
+    const jobs = data.jobs || currentJobs;
+    const kwFreq = data.keyword_frequency || {};
+
+    const sources = {};
+    jobs.forEach(j => { if(j.source) sources[j.source] = (sources[j.source]||0) + 1; });
+
+    // Stats
+    document.getElementById('statsRow').innerHTML = `
+        <div class="stat-card"><div class="stat-label">Total Jobs</div><div class="stat-value">${jobs.length}</div></div>
+        <div class="stat-card"><div class="stat-label">Unique Keywords</div><div class="stat-value">${Object.keys(kwFreq).length}</div></div>
+        <div class="stat-card"><div class="stat-label">Sources</div><div class="stat-value">${Object.keys(sources).length}</div></div>
+        <div class="stat-card"><div class="stat-label">Interview Q's</div><div class="stat-value">${data.total_questions||0}</div></div>
+    `;
+
+    // Source chart
+    if (sourceChartInst) sourceChartInst.destroy();
+    const colors = ['#6c63ff','#34d399','#fb923c','#f87171','#a78bfa','#22d3ee'];
+    sourceChartInst = new Chart(document.getElementById('sourceChart').getContext('2d'), {
+        type:'doughnut',
+        data: { labels:Object.keys(sources), datasets:[{ data:Object.values(sources), backgroundColor:colors, borderColor:'transparent' }] },
+        options: { plugins:{ legend:{ labels:{ color:'#9896a8', font:{ family:'DM Sans' } } } } }
+    });
+
+    // Keywords
+    const sortedKw = Object.entries(kwFreq).sort((a,b)=>b[1]-a[1]);
+    document.getElementById('keywordBadges').innerHTML = sortedKw.slice(0,20).map(
+        ([kw,c]) => `<span class="badge badge-keyword">${esc(kw)} (${c})</span>`
+    ).join(' ');
+
+    if (keywordChartInst) keywordChartInst.destroy();
+    const top = sortedKw.slice(0,12);
+    if (top.length) {
+        keywordChartInst = new Chart(document.getElementById('keywordChart').getContext('2d'), {
+            type:'bar',
+            data: { labels:top.map(x=>x[0]), datasets:[{ label:'Frequency', data:top.map(x=>x[1]), backgroundColor:'#6c63ff', borderRadius:6 }] },
+            options: { indexAxis:'y', plugins:{ legend:{ display:false } },
+                scales:{ x:{ ticks:{ color:'#9896a8' }, grid:{ color:'#2a2a38' } },
+                         y:{ ticks:{ color:'#e8e6f0', font:{ family:'DM Sans', size:12 } }, grid:{ display:false } } } }
+        });
+    }
+
+    // Interview
+    const intHTML = jobs.filter(j => j.interview_questions && j.interview_questions.length).map(job => {
+        const qs = arrify(job.interview_questions);
+        return `<div class="interview-card">
+            <h4>${esc(job.title||'Job')}</h4>
+            <div class="interview-company">${esc(job.company||'')} &bull; ${esc(job.location||'')}</div>
+            ${qs.map(q => `<div class="question">${esc(q)}</div>`).join('')}
+        </div>`;
+    }).join('');
+    document.getElementById('interviewList').innerHTML = intHTML || '<div class="empty-state"><p>Click "Analyze & Save" to generate interview questions.</p></div>';
+
+    renderJobsList(jobs);
+}
+
+// File ops
+async function loadFile() {
+    try {
+        const resp = await fetch('/api/read_file?filename=jobs_data.txt');
+        const data = await resp.json();
+        document.getElementById('fileContent').textContent = data.content;
+        await refreshToolLog();
+    } catch(e) { document.getElementById('fileContent').textContent = `Error: ${e.message}`; }
+}
+async function deleteFile() {
+    if (!confirm('Delete saved job data?')) return;
+    await fetch('/api/delete_file', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({filename:'jobs_data.txt'}) });
+    document.getElementById('fileContent').textContent = 'Deleted.';
+    await refreshToolLog();
+}
+async function newSearch() {
+    await fetch('/api/new_search', { method:'POST' });
+    currentJobs = [];
+    document.getElementById('dashboardSection').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('analyzeBtn').style.display = 'none';
+    document.getElementById('dashboardBtn').style.display = 'none';
+    document.getElementById('queryInput').value = '';
+    document.getElementById('queryInput').focus();
+    hideStatus();
+    if (sourceChartInst) { sourceChartInst.destroy(); sourceChartInst=null; }
+    if (keywordChartInst) { keywordChartInst.destroy(); keywordChartInst=null; }
+    await refreshToolLog();
+}
+
+function esc(s) { const d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML; }
+function arrify(v) { if (Array.isArray(v)) return v; if (typeof v === 'string') return v.split(',').map(s=>s.trim()).filter(Boolean); return []; }
+
+document.getElementById('queryInput').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+
+// Auto-load if saved data exists
+{% if saved_jobs %}
+currentJobs = {{ saved_jobs | tojson }};
+document.getElementById('dashboardSection').style.display = 'block';
+document.getElementById('emptyState').style.display = 'none';
+document.getElementById('analyzeBtn').style.display = 'inline-flex';
+document.getElementById('dashboardBtn').style.display = 'inline-flex';
+renderJobsList(currentJobs);
+if (currentJobs.some(j => j.keywords)) doDashboard();
+{% endif %}
+
+// Load tool log on page load
+refreshToolLog();
+</script>
+</body>
+</html>

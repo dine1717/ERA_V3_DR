@@ -1,0 +1,15 @@
+# Core MCP
+mcp[cli]
+fastmcp
+prefab-ui
+
+# Web app
+flask
+
+# LLM client (for enrichment)
+google-genai
+python-dotenv
+
+# Web scraping (for search_jobs tool)
+requests
+beautifulsoup4
