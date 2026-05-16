@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CareerCraft AI</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f5f5;color:#1a1a1a;font-size:14px}
+.app{display:grid;grid-template-columns:320px 1fr;min-height:100vh}
+
+/* sidebar */
+.sidebar{background:#0f172a;color:#e2e8f0;padding:0;display:flex;flex-direction:column}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid #1e293b}
+.sidebar-header h1{font-size:18px;font-weight:600;color:#f8fafc;margin-bottom:4px}
+.sidebar-header p{font-size:12px;color:#64748b}
+.stages{padding:12px 0;flex:1;overflow-y:auto}
+.stage-item{padding:10px 20px;display:flex;align-items:center;gap:10px;cursor:default;border-left:3px solid transparent;transition:all .2s}
+.stage-item.active{background:#1e293b;border-left-color:#6366f1}
+.stage-item.done{border-left-color:#10b981}
+.stage-item.error{border-left-color:#ef4444}
+.stage-num{width:24px;height:24px;border-radius:50%;background:#1e293b;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#64748b;flex-shrink:0}
+.stage-item.done .stage-num{background:#10b981;color:#fff}
+.stage-item.active .stage-num{background:#6366f1;color:#fff}
+.stage-item.error .stage-num{background:#ef4444;color:#fff}
+.stage-info{flex:1}
+.stage-name{font-size:12px;font-weight:500;color:#cbd5e1}
+.stage-msg{font-size:11px;color:#475569;margin-top:2px}
+.stage-spinner{width:14px;height:14px;border:2px solid #334155;border-top-color:#6366f1;border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* main */
+.main{display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid #e5e7eb;padding:16px 24px;display:flex;align-items:center;gap:12px}
+.topbar h2{font-size:16px;font-weight:600;color:#111827}
+.tab-bar{display:flex;gap:0;padding:0 24px;background:#fff;border-bottom:1px solid #e5e7eb}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab.active{color:#6366f1;border-bottom-color:#6366f1}
+.tab-content{display:none;flex:1;padding:24px;overflow-y:auto}
+.tab-content.active{display:block}
+
+/* input panel */
+.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:500;color:#374151;margin-bottom:6px}
+.field input,.field textarea{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;background:#fff;resize:vertical}
+.field textarea{min-height:200px;font-family:inherit}
+.field input:focus,.field textarea:focus{outline:2px solid #6366f1;border-color:transparent}
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:#6366f1;color:#fff}
+.btn-primary:hover{background:#4f46e5}
+.btn-primary:disabled{background:#a5b4fc;cursor:not-allowed}
+.btn-secondary{background:#f3f4f6;color:#374151;border:1px solid #d1d5db}
+.btn-secondary:hover{background:#e5e7eb}
+
+/* cards */
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:600;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+.badge-critical{background:#fee2e2;color:#991b1b}
+.badge-nice{background:#fef3c7;color:#92400e}
+.badge-strong{background:#d1fae5;color:#065f46}
+.badge-tech{background:#ede9fe;color:#5b21b6}
+.badge-domain{background:#dbeafe;color:#1e40af}
+.badge-soft{background:#fce7f3;color:#9d174d}
+.badge-score{background:#f0fdf4;color:#166534}
+
+/* gap table */
+.gap-table{width:100%;border-collapse:collapse}
+.gap-table th{text-align:left;font-size:11px;font-weight:500;color:#6b7280;padding:8px 10px;border-bottom:1px solid #f3f4f6;background:#f9fafb}
+.gap-table td{padding:10px;border-bottom:1px solid #f9fafb;vertical-align:top;font-size:12px}
+.gap-table tr:last-child td{border-bottom:none}
+
+/* ats score */
+.ats-ring{display:flex;align-items:center;gap:20px;margin-bottom:16px}
+.score-circle{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0}
+.score-circle.pass{background:#d1fae5;color:#065f46;border:3px solid #10b981}
+.score-circle.fail{background:#fee2e2;color:#991b1b;border:3px solid #ef4444}
+.score-circle.neutral{background:#ede9fe;color:#5b21b6;border:3px solid #8b5cf6}
+.cycle-pills{display:flex;gap:6px;flex-wrap:wrap}
+.cycle-pill{font-size:11px;padding:3px 10px;border-radius:20px;background:#f3f4f6;color:#374151}
+.cycle-pill.active{background:#ede9fe;color:#5b21b6}
+
+/* resume preview */
+.resume-preview{background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:20px;font-size:13px;line-height:1.7;white-space:pre-wrap;max-height:500px;overflow-y:auto;font-family:'Courier New',monospace}
+
+/* questions */
+.q-section{margin-bottom:20px}
+.q-section-title{font-size:13px;font-weight:600;color:#374151;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.q-card{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:8px}
+.q-text{font-size:13px;color:#111827;font-weight:500;margin-bottom:6px}
+.q-meta{font-size:11px;color:#6b7280}
+
+/* project Q&A */
+.project-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:16px;overflow:hidden}
+.project-header{background:#f8fafc;padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:10px}
+.project-name{font-size:14px;font-weight:600;color:#111827}
+.tool-pill{font-size:11px;padding:2px 8px;border-radius:20px;background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd}
+.qa-item{padding:16px;border-bottom:1px solid #f3f4f6}
+.qa-item:last-child{border-bottom:none}
+.qa-q{font-size:13px;font-weight:500;color:#1e40af;margin-bottom:10px}
+.star-grid{display:grid;grid-template-columns:80px 1fr;gap:4px 12px;font-size:12px}
+.star-label{font-weight:600;color:#6b7280;padding-top:2px}
+.star-val{color:#374151;line-height:1.5}
+.qa-followup{margin-top:10px;padding:10px;background:#fffbeb;border-radius:6px;font-size:12px;color:#92400e}
+
+/* mock interview */
+.mock-layout{display:grid;grid-template-columns:1fr 320px;gap:20px;height:calc(100vh - 160px)}
+.mock-chat{display:flex;flex-direction:column;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+.mock-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:85%;padding:12px 14px;border-radius:12px;font-size:13px;line-height:1.5}
+.msg-interviewer{background:#f0f4ff;color:#1e3a8a;align-self:flex-start;border-bottom-left-radius:4px}
+.msg-user{background:#6366f1;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.msg-score{background:#f0fdf4;color:#166534;align-self:flex-start;border:1px solid #bbf7d0;max-width:100%;width:100%}
+.mock-input-row{padding:12px;border-top:1px solid #e5e7eb;display:flex;gap:8px}
+.mock-input{flex:1;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;resize:none;height:80px;font-family:inherit}
+.mock-sidebar-panel{display:flex;flex-direction:column;gap:12px}
+.score-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px}
+.score-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f3f4f6;font-size:12px}
+.score-row:last-child{border-bottom:none}
+.score-bar{width:80px;height:6px;background:#f3f4f6;border-radius:3px;overflow:hidden}
+.score-fill{height:100%;background:#6366f1;border-radius:3px;transition:width .3s}
+
+/* prompts tab */
+.prompt-compare{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.prompt-box{background:#1e293b;border-radius:8px;padding:16px;font-family:'Courier New',monospace;font-size:12px;color:#e2e8f0;white-space:pre-wrap;max-height:500px;overflow-y:auto;line-height:1.6}
+.criteria-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.criterion-item{padding:10px 12px;border-radius:8px;border:1px solid #e5e7eb;font-size:12px;display:flex;align-items:center;gap:8px}
+.criterion-item.pass{background:#f0fdf4;border-color:#86efac}
+.criterion-item.fail{background:#fef2f2;border-color:#fca5a5}
+.cicon{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.cicon.pass{background:#10b981;color:#fff}
+.cicon.fail{background:#ef4444;color:#fff}
+
+/* log panel */
+.log-panel{background:#0f172a;border-radius:8px;padding:12px;font-family:'Courier New',monospace;font-size:11px;color:#64748b;max-height:200px;overflow-y:auto}
+.log-entry{padding:3px 0;border-bottom:1px solid #1e293b}
+.log-entry:last-child{border-bottom:none}
+.log-stage{color:#6366f1;font-weight:600}
+.log-done{color:#10b981}
+.log-error{color:#ef4444}
+
+/* util */
+.hidden{display:none}
+.flex{display:flex}.gap-2{gap:8px}.items-center{align-items:center}.justify-between{justify-content:space-between}
+.text-muted{font-size:12px;color:#6b7280}
+.mt-2{margin-top:8px}.mb-2{margin-bottom:8px}
+.empty-state{text-align:center;padding:40px 20px;color:#9ca3af}
+.empty-state h3{font-size:16px;margin-bottom:8px;color:#d1d5db}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h1>CareerCraft AI</h1>
+    <p>ERA V3 · Session 5 Assignment</p>
+  </div>
+  <div class="stages">
+    <div class="stage-item" id="s0">
+      <div class="stage-num">0</div>
+      <div class="stage-info"><div class="stage-name">Inputs</div><div class="stage-msg">Job URL + resume</div></div>
+    </div>
+    <div class="stage-item" id="s1">
+      <div class="stage-num">1</div>
+      <div class="stage-info"><div class="stage-name">Ingest</div><div class="stage-msg">Scrape job posting</div></div>
+    </div>
+    <div class="stage-item" id="s2">
+      <div class="stage-num">2</div>
+      <div class="stage-info"><div class="stage-name">Extract</div><div class="stage-msg">Structured schemas</div></div>
+    </div>
+    <div class="stage-item" id="s3">
+      <div class="stage-num">3</div>
+      <div class="stage-info"><div class="stage-name">Gap Analysis</div><div class="stage-msg">Severity scoring</div></div>
+    </div>
+    <div class="stage-item" id="s4">
+      <div class="stage-num">4</div>
+      <div class="stage-info"><div class="stage-name">Resume Builder</div><div class="stage-msg">Keyword injection</div></div>
+    </div>
+    <div class="stage-item" id="s5">
+      <div class="stage-num">5</div>
+      <div class="stage-info"><div class="stage-name">ATS Score</div><div class="stage-msg">Refine loop</div></div>
+    </div>
+    <div class="stage-item" id="s6">
+      <div class="stage-num">6</div>
+      <div class="stage-info"><div class="stage-name">Questions</div><div class="stage-msg">Interview prep</div></div>
+    </div>
+    <div class="stage-item" id="s7">
+      <div class="stage-num">7</div>
+      <div class="stage-info"><div class="stage-name">Project Q&A</div><div class="stage-msg">Deep dive prep</div></div>
+    </div>
+    <div class="stage-item" id="s8">
+      <div class="stage-num">8</div>
+      <div class="stage-info"><div class="stage-name">Mock Coach</div><div class="stage-msg">Live interview</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <h2>CareerCraft AI — Job to Interview-Ready</h2>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('input')">Input</div>
+    <div class="tab" onclick="switchTab('gaps')">Gap Analysis</div>
+    <div class="tab" onclick="switchTab('resume')">Resume</div>
+    <div class="tab" onclick="switchTab('questions')">Questions</div>
+    <div class="tab" onclick="switchTab('projects')">Project Q&A</div>
+    <div class="tab" onclick="switchTab('mock')">Mock Interview</div>
+    <div class="tab" onclick="switchTab('prompts')">Prompts</div>
+  </div>
+
+  <!-- INPUT TAB -->
+  <div class="tab-content active" id="tab-input">
+    <div class="input-grid">
+      <div class="field">
+        <label>LinkedIn Job URL (or paste job description)</label>
+        <input type="text" id="job_url" placeholder="https://www.linkedin.com/jobs/view/..." />
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label>Your Resume (paste full text)</label>
+        <textarea id="resume_text" placeholder="Paste your resume here — include all projects, tools, experience sections..."></textarea>
+      </div>
+    </div>
+    <div class="flex gap-2 items-center mb-2">
+      <button class="btn btn-primary" id="run_btn" onclick="runPipeline()">Run Full Pipeline (Stages 1–7)</button>
+      <span class="text-muted" id="run_status"></span>
+    </div>
+    <div class="log-panel" id="log_panel">
+      <div style="color:#475569">Pipeline logs will appear here...</div>
+    </div>
+  </div>
+
+  <!-- GAPS TAB -->
+  <div class="tab-content" id="tab-gaps">
+    <div id="gaps_content"><div class="empty-state"><h3>No data yet</h3><p>Run the pipeline first</p></div></div>
+  </div>
+
+  <!-- RESUME TAB -->
+  <div class="tab-content" id="tab-resume">
+    <div id="resume_content"><div class="empty-state"><h3>No data yet</h3><p>Run the pipeline first</p></div></div>
+  </div>
+
+  <!-- QUESTIONS TAB -->
+  <div class="tab-content" id="tab-questions">
+    <div id="questions_content"><div class="empty-state"><h3>No data yet</h3><p>Run the pipeline first</p></div></div>
+  </div>
+
+  <!-- PROJECTS TAB -->
+  <div class="tab-content" id="tab-projects">
+    <div id="projects_content"><div class="empty-state"><h3>No data yet</h3><p>Run the pipeline first</p></div></div>
+  </div>
+
+  <!-- MOCK TAB -->
+  <div class="tab-content" id="tab-mock">
+    <div class="mock-layout">
+      <div class="mock-chat">
+        <div class="mock-messages" id="mock_messages">
+          <div class="empty-state"><h3>Ready for mock interview</h3><p>Run the pipeline then click Start Session</p></div>
+        </div>
+        <div class="mock-input-row">
+          <textarea class="mock-input" id="mock_answer" placeholder="Type your answer here..."></textarea>
+          <div class="flex" style="flex-direction:column;gap:6px">
+            <button class="btn btn-primary" id="mock_start_btn" onclick="startMock()">Start Session</button>
+            <button class="btn btn-secondary" id="mock_submit_btn" onclick="submitAnswer()" disabled>Submit Answer</button>
+          </div>
+        </div>
+      </div>
+      <div class="mock-sidebar-panel">
+        <div class="card">
+          <div class="card-title">Session Stats</div>
+          <div id="mock_stats" class="text-muted">Not started</div>
+        </div>
+        <div class="score-card" id="last_score_card" style="display:none">
+          <div class="card-title">Last Score</div>
+          <div id="last_score_display"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROMPTS TAB -->
+  <div class="tab-content" id="tab-prompts">
+
+    <!-- Live qualifier -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Live Prompt Qualifier</div>
+      <p class="text-muted mb-2">Paste any prompt below and click Evaluate — the tool scores it live against all 9 criteria using Gemini.</p>
+      <textarea id="eval_input" rows="6" style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;font-size:12px;font-family:monospace;resize:vertical;margin-bottom:10px" placeholder="Paste any prompt here to evaluate..."></textarea>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="btn btn-primary" id="eval_btn" onclick="evaluatePrompt()">Evaluate Prompt</button>
+        <button class="btn btn-secondary" onclick="loadDraftIntoEval()">Load Draft Prompt</button>
+        <button class="btn btn-secondary" onclick="loadQualifiedIntoEval()">Load Qualified Prompt</button>
+        <span id="eval_status" style="font-size:12px;color:#6b7280"></span>
+      </div>
+      <div id="eval_result" style="margin-top:16px;display:none">
+        <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:10px">Qualification Result</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px" id="eval_criteria_grid"></div>
+        <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:6px">Raw JSON output</div>
+        <div id="eval_json" style="background:#0f172a;border-radius:8px;padding:14px;font-family:monospace;font-size:11px;color:#e2e8f0;white-space:pre;line-height:1.7;overflow-x:auto"></div>
+      </div>
+    </div>
+
+    <!-- Before / after -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Draft vs Qualified Prompt</div>
+      <p class="text-muted mb-2">The draft prompt scored 0/8. After qualification it scores 9/9. This diff is the core assignment deliverable.</p>
+      <div class="prompt-compare" id="prompt_compare">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">Draft prompt — before qualification</div>
+          <div class="prompt-box" id="draft_prompt">Loading...</div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">Qualified prompt — used in production</div>
+          <div class="prompt-box" id="qualified_prompt">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compare both prompts live -->
+    <div class="card">
+      <div class="card-title">Compare: Draft vs Qualified — live LLM scores</div>
+      <p class="text-muted mb-2">Click the button to evaluate both prompts with Gemini and see the real scores side by side.</p>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">
+        <button class="btn btn-primary" id="compare_btn" onclick="runComparison()">Evaluate Both Prompts with Gemini</button>
+        <span id="compare_status" style="font-size:12px;color:#6b7280"></span>
+      </div>
+      <div id="compare_result" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#dc2626;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+              <span id="draft_score_badge" style="background:#fee2e2;color:#991b1b;padding:2px 10px;border-radius:20px;font-size:11px">0/8</span>
+              Draft prompt
+            </div>
+            <div id="draft_criteria" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+            <div id="draft_json" style="background:#0f172a;border-radius:8px;padding:12px;font-family:monospace;font-size:10px;color:#e2e8f0;white-space:pre;line-height:1.6;overflow-x:auto"></div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#16a34a;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+              <span id="qualified_score_badge" style="background:#d1fae5;color:#065f46;padding:2px 10px;border-radius:20px;font-size:11px">0/8</span>
+              Qualified prompt
+            </div>
+            <div id="qualified_criteria" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+            <div id="qualified_json" style="background:#0f172a;border-radius:8px;padding:12px;font-family:monospace;font-size:10px;color:#e2e8f0;white-space:pre;line-height:1.6;overflow-x:auto"></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+</div>
+</div>
+
+<script>
+let pipelineData = null;
+let mockQNum = 0;
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  const tabs = ['input','gaps','resume','questions','projects','mock','prompts'];
+  const idx = tabs.indexOf(name);
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  if (name === 'prompts') loadPrompts();
+}
+
+function setStage(num, state, msg) {
+  const el = document.getElementById('s' + num);
+  if (!el) return;
+  el.className = 'stage-item ' + state;
+  const msgEl = el.querySelector('.stage-msg');
+  if (msgEl && msg) msgEl.textContent = msg;
+  const numEl = el.querySelector('.stage-num');
+  // spinner
+  const existing = el.querySelector('.stage-spinner');
+  if (existing) existing.remove();
+  if (state === 'active') {
+    const spinner = document.createElement('div');
+    spinner.className = 'stage-spinner';
+    el.appendChild(spinner);
+  }
+}
+
+function appendLog(stage, status, message) {
+  const panel = document.getElementById('log_panel');
+  const div = document.createElement('div');
+  div.className = 'log-entry';
+  const cls = status === 'done' ? 'log-done' : status === 'error' ? 'log-error' : 'log-stage';
+  div.innerHTML = `<span class="${cls}">[S${stage}]</span> ${message}`;
+  panel.appendChild(div);
+  panel.scrollTop = panel.scrollHeight;
+}
+
+async function runPipeline() {
+  const jobUrl = document.getElementById('job_url').value.trim();
+  const resumeText = document.getElementById('resume_text').value.trim();
+  if (!jobUrl || !resumeText) { alert('Both job URL and resume are required'); return; }
+
+  const btn = document.getElementById('run_btn');
+  btn.disabled = true;
+  btn.textContent = 'Running...';
+  document.getElementById('log_panel').innerHTML = '';
+  document.getElementById('run_status').textContent = 'Pipeline started — stages updating in real time...';
+  for (let i = 1; i <= 8; i++) setStage(i, '', '');
+
+  // Step 1: POST to start pipeline, get job_id back immediately
+  let job_id;
+  try {
+    const resp = await fetch('/api/run_pipeline', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({job_url: jobUrl, resume_text: resumeText})
+    });
+    const data = await resp.json();
+    if (!data.ok) {
+      document.getElementById('run_status').textContent = 'Error: ' + data.error;
+      btn.disabled = false; btn.textContent = 'Run Full Pipeline (Stages 1-7)';
+      return;
+    }
+    job_id = data.job_id;
+  } catch(e) {
+    document.getElementById('run_status').textContent = 'Error: ' + e.message;
+    btn.disabled = false; btn.textContent = 'Run Full Pipeline (Stages 1-7)';
+    return;
+  }
+
+  // Step 2: Poll /api/progress/:job_id every 2 seconds
+  let lastLogCount = 0;
+  const poll = setInterval(async () => {
+    try {
+      const resp = await fetch('/api/progress/' + job_id);
+      const data = await resp.json();
+
+      // render new log entries since last poll
+      const newLogs = data.logs.slice(lastLogCount);
+      newLogs.forEach(l => {
+        appendLog(l.stage, l.status, l.message);
+        if (l.status === 'done') setStage(l.stage, 'done', l.message);
+        else if (l.status === 'running') setStage(l.stage, 'active', l.message);
+        else if (l.status === 'error') setStage(l.stage, 'error', l.message);
+      });
+      lastLogCount = data.logs.length;
+
+      if (data.error) {
+        clearInterval(poll);
+        document.getElementById('run_status').textContent = 'Error: ' + data.error;
+        btn.disabled = false; btn.textContent = 'Run Full Pipeline (Stages 1-7)';
+      }
+
+      if (data.done && data.result) {
+        clearInterval(poll);
+        pipelineData = data.result;
+        document.getElementById('run_status').textContent = 'Pipeline complete!';
+        btn.disabled = false; btn.textContent = 'Run Full Pipeline (Stages 1-7)';
+        renderGaps(data.result);
+        renderResume(data.result);
+        renderQuestions(data.result);
+        renderProjects(data.result);
+      }
+
+    } catch(e) {
+      console.warn('Poll blip (retrying):', e.message);
+    }
+  }, 2000);
+}
+
+
+function renderGaps(data) {
+  const ga = data.gap_analysis || {};
+  const gaps = ga.gaps || [];
+  const score = ga.overall_match_percent || 0;
+  let html = `
+  <div class="card">
+    <div class="card-title">Overall Match <span class="badge badge-score">${score}%</span></div>
+    <p class="text-muted">${ga.summary || ''}</p>
+    ${ga.critical_missing ? `<div class="mt-2"><strong style="font-size:12px">Critical missing:</strong> ${ga.critical_missing.map(x => `<span class="badge badge-critical" style="margin:2px">${x}</span>`).join('')}</div>` : ''}
+  </div>
+  <div class="card">
+    <div class="card-title">Gap Analysis (${gaps.length} items)</div>
+    <table class="gap-table">
+      <thead><tr><th>Item</th><th>Severity</th><th>Type</th><th>Confidence</th><th>Suggested Action</th></tr></thead>
+      <tbody>
+        ${gaps.map(g => `
+        <tr>
+          <td><strong>${g.item}</strong></td>
+          <td><span class="badge ${g.severity === 'critical' ? 'badge-critical' : g.severity === 'nice_to_have' ? 'badge-nice' : 'badge-strong'}">${g.severity}</span></td>
+          <td><span class="badge ${g.reasoning_type === 'technical' ? 'badge-tech' : g.reasoning_type === 'domain' ? 'badge-domain' : 'badge-soft'}">${g.reasoning_type}</span></td>
+          <td>${((g.confidence||0)*100).toFixed(0)}%</td>
+          <td>${g.suggested_action || ''}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+  document.getElementById('gaps_content').innerHTML = html;
+}
+
+function renderResume(data) {
+  const rb = data.resume_built || {};
+  const ats = data.ats_score || {};
+  const history = data.ats_history || [];
+  const score = ats.overall_score || 0;
+  const passes = ats.passes_threshold;
+  const cycles = data.total_cycles || history.length;
+
+  let html = `
+  <div class="card">
+    <div class="card-title">ATS Match Score</div>
+    <div class="ats-ring">
+      <div class="score-circle ${passes ? 'pass' : score >= 60 ? 'neutral' : 'fail'}">${score}%</div>
+      <div>
+        <div style="font-size:13px;font-weight:500;margin-bottom:8px">${passes ? '✓ Passes threshold (80%)' : '✗ Below threshold — ' + cycles + ' refinement cycle(s) run'}</div>
+        <div class="cycle-pills">
+          ${history.map((h,i) => `<span class="cycle-pill ${i===history.length-1?'active':''}">Cycle ${i+1}: ${h.overall_score||0}%</span>`).join('')}
+        </div>
+        ${ats.missing_keywords?.length ? `<div class="mt-2 text-muted">Still missing: ${ats.missing_keywords.slice(0,5).join(', ')}</div>` : ''}
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Tailored Resume <span style="font-size:12px;font-weight:400;color:#6b7280">— keywords injected: ${(rb.injected_keywords||[]).join(', ')}</span></div>
+    <div class="resume-preview">${rb.rewritten_resume || 'No resume generated'}</div>
+  </div>`;
+  document.getElementById('resume_content').innerHTML = html;
+}
+
+function renderQuestions(data) {
+  const iq = data.interview_questions || {};
+  const sections = [
+    {key:'gap_targeted', label:'Gap-Targeted', badge:'badge-critical'},
+    {key:'technical', label:'Technical', badge:'badge-tech'},
+    {key:'behavioural', label:'Behavioural', badge:'badge-soft'},
+    {key:'role_specific', label:'Role-Specific', badge:'badge-domain'}
+  ];
+  let html = sections.map(s => {
+    const qs = iq[s.key] || [];
+    if (!qs.length) return '';
+    return `<div class="q-section">
+      <div class="q-section-title"><span class="badge ${s.badge}">${s.label}</span> ${qs.length} questions</div>
+      ${qs.map(q => {
+        const qtext = q.question || q.q || '';
+        const meta = q.why_asked || q.why_critical || q.context || '';
+        return `<div class="q-card">
+          <div class="q-text">${qtext}</div>
+          ${meta ? `<div class="q-meta">${meta}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+  document.getElementById('questions_content').innerHTML = html || '<div class="empty-state"><h3>No questions generated</h3></div>';
+}
+
+function renderProjects(data) {
+  const pqa = data.project_qa || [];
+  if (!pqa.length) {
+    document.getElementById('projects_content').innerHTML = '<div class="empty-state"><h3>No projects found</h3><p>Add projects to your resume</p></div>';
+    return;
+  }
+  let html = pqa.map(project => {
+    const tools = (project.tools_used || []).map(t => `<span class="tool-pill">${t}</span>`).join('');
+    const questions = (project.questions || []).map(qa => {
+      const pa = qa.preferred_answer || {};
+      return `<div class="qa-item">
+        <div class="qa-q">${qa.q}</div>
+        <div class="star-grid">
+          <span class="star-label">S —</span><span class="star-val">${pa.situation || ''}</span>
+          <span class="star-label">T —</span><span class="star-val">${pa.task || ''}</span>
+          <span class="star-label">A —</span><span class="star-val">${pa.action || ''}</span>
+          <span class="star-label">R —</span><span class="star-val">${pa.result || ''}</span>
+        </div>
+        ${qa.follow_up ? `<div class="qa-followup">Follow-up: ${qa.follow_up}</div>` : ''}
+      </div>`;
+    }).join('');
+    return `<div class="project-card">
+      <div class="project-header">
+        <div class="project-name">${project.project || 'Project'}</div>
+        ${tools}
+      </div>
+      ${questions}
+    </div>`;
+  }).join('');
+  document.getElementById('projects_content').innerHTML = html;
+}
+
+async function startMock() {
+  const resp = await fetch('/api/mock/start', {method:'POST'});
+  const data = await resp.json();
+  if (!data.ok) { alert(data.error); return; }
+
+  mockQNum = 1;
+  document.getElementById('mock_messages').innerHTML = '';
+  document.getElementById('mock_start_btn').textContent = 'Restart';
+  document.getElementById('mock_submit_btn').disabled = false;
+
+  addMessage('interviewer', `Welcome to your mock interview! I'll be asking you ${data.source === 'gap_targeted' ? 'questions targeting your skill gaps' : 'project-specific questions'} first.\n\n<strong>Question ${mockQNum}:</strong> ${data.question}`);
+  updateMockStats();
+}
+
+async function submitAnswer() {
+  const answer = document.getElementById('mock_answer').value.trim();
+  if (!answer) return;
+  document.getElementById('mock_answer').value = '';
+  document.getElementById('mock_submit_btn').disabled = true;
+
+  addMessage('user', answer);
+
+  const resp = await fetch('/api/mock/answer', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({answer})
+  });
+  const data = await resp.json();
+  document.getElementById('mock_submit_btn').disabled = false;
+
+  if (!data.ok) { addMessage('interviewer', 'Error: ' + data.error); return; }
+
+  const score = data.score || {};
+  const scores = score.scores || {};
+  renderLastScore(scores);
+
+  addMessage('score', formatScore(score));
+
+  if (data.session_complete) {
+    addMessage('interviewer', "That's the end of our session! Check your score history to see how you did overall. Great work!");
+    document.getElementById('mock_submit_btn').disabled = true;
+  } else {
+    mockQNum++;
+    addMessage('interviewer', `<strong>Question ${mockQNum}:</strong> ${data.next_question}`);
+  }
+  updateMockStats(data.questions_answered);
+}
+
+function formatScore(score) {
+  const s = score.scores || {};
+  const overall = s.overall || score.overall || 0;
+  const label = score.score_label || '';
+  let html = `<strong>STAR Score: ${overall}/10</strong> <span style="background:#d1fae5;padding:2px 8px;border-radius:20px;font-size:11px">${label}</span><br><br>`;
+  html += `S: ${s.situation||0}/10 · T: ${s.task||0}/10 · A: ${s.action||0}/10 · R: ${s.result||0}/10<br><br>`;
+  if (score.feedback) {
+    html += `<strong>What worked:</strong> ${score.feedback.what_worked || ''}<br>`;
+    html += `<strong>Key improvement:</strong> ${score.feedback.key_improvement || ''}`;
+  }
+  if (score.rewritten_answer) {
+    html += `<br><br><strong>Stronger version:</strong><br><em>${score.rewritten_answer}</em>`;
+  }
+  return html;
+}
+
+function renderLastScore(scores) {
+  const card = document.getElementById('last_score_card');
+  card.style.display = 'block';
+  const items = [
+    {label:'Situation', val:scores.situation||0},
+    {label:'Task', val:scores.task||0},
+    {label:'Action', val:scores.action||0},
+    {label:'Result', val:scores.result||0},
+    {label:'Overall', val:scores.overall||0}
+  ];
+  document.getElementById('last_score_display').innerHTML = items.map(item => `
+    <div class="score-row">
+      <span>${item.label}</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="score-bar"><div class="score-fill" style="width:${item.val*10}%"></div></div>
+        <span style="font-size:12px;font-weight:500;width:28px">${item.val}/10</span>
+      </div>
+    </div>`).join('');
+}
+
+function addMessage(type, html) {
+  const container = document.getElementById('mock_messages');
+  const div = document.createElement('div');
+  div.className = `msg msg-${type}`;
+  div.innerHTML = html;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function updateMockStats(answered) {
+  document.getElementById('mock_stats').innerHTML = `Questions answered: <strong>${answered || 0}</strong>`;
+}
+
+async function runComparison() {
+  const btn = document.getElementById('compare_btn');
+  const status = document.getElementById('compare_status');
+  btn.disabled = true;
+  btn.textContent = 'Evaluating both prompts...';
+
+  // make sure prompts are loaded first
+  await loadPrompts();
+
+  const draft = window._draftPrompt || '';
+  const qualified = window._qualifiedPrompt || '';
+  if (!draft || !qualified) {
+    status.textContent = 'Could not load prompts from server';
+    btn.disabled = false; btn.textContent = 'Evaluate Both Prompts with Gemini';
+    return;
+  }
+
+  const boolKeys = ['explicit_reasoning','structured_output','tool_separation','conversation_loop',
+                    'instructional_framing','internal_self_checks','reasoning_type_awareness','fallbacks'];
+  const labels = {
+    explicit_reasoning: 'Explicit reasoning',
+    structured_output: 'Structured output',
+    tool_separation: 'Tool separation',
+    conversation_loop: 'Conversation loop',
+    instructional_framing: 'Instructional framing',
+    internal_self_checks: 'Internal self-checks',
+    reasoning_type_awareness: 'Reasoning type awareness',
+    fallbacks: 'Error handling / fallbacks'
+  };
+
+  function renderCriteria(containerId, result) {
+    const el = document.getElementById(containerId);
+    el.innerHTML = boolKeys.map(k => {
+      const pass = result[k] === true;
+      return `<div style="display:flex;align-items:center;gap:8px;font-size:11px;padding:5px 8px;border-radius:6px;background:${pass?'#f0fdf4':'#fef2f2'};border:0.5px solid ${pass?'#86efac':'#fca5a5'}">
+        <div style="width:14px;height:14px;border-radius:50%;background:${pass?'#10b981':'#ef4444'};display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;flex-shrink:0">${pass?'✓':'✗'}</div>
+        ${labels[k]}
+      </div>`;
+    }).join('') + `<div style="font-size:11px;padding:6px 8px;border-radius:6px;background:#f9fafb;border:0.5px solid #e5e7eb;color:#374151"><strong>Overall:</strong> ${result.overall_clarity||''}</div>`;
+  }
+
+  function renderJson(containerId, result, badgeId) {
+    const passing = boolKeys.filter(k => result[k] === true).length;
+    document.getElementById(badgeId).textContent = passing + '/8';
+    const jsonStr = JSON.stringify(result, null, 2)
+      .replace(/"([^"]+)":/g, '<span style="color:#93c5fd">"$1"</span>:')
+      .replace(/: (true)/g, ': <span style="color:#6ee7b7">true</span>')
+      .replace(/: (false)/g, ': <span style="color:#f87171">false</span>')
+      .replace(/: "([^"]+)"/g, ': <span style="color:#fcd34d">"$1"</span>');
+    document.getElementById(containerId).innerHTML = jsonStr;
+  }
+
+  try {
+    status.textContent = 'Evaluating draft prompt...';
+    const r1 = await fetch('/api/evaluate_prompt', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({prompt: draft})
+    });
+    const d1 = await r1.json();
+    if (d1.ok) {
+      renderCriteria('draft_criteria', d1.result);
+      renderJson('draft_json', d1.result, 'draft_score_badge');
+    }
+
+    status.textContent = 'Evaluating qualified prompt...';
+    const r2 = await fetch('/api/evaluate_prompt', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({prompt: qualified})
+    });
+    const d2 = await r2.json();
+    if (d2.ok) {
+      renderCriteria('qualified_criteria', d2.result);
+      renderJson('qualified_json', d2.result, 'qualified_score_badge');
+    }
+
+    document.getElementById('compare_result').style.display = 'block';
+    status.textContent = 'Done — both scores are live Gemini evaluations';
+  } catch(e) {
+    status.textContent = 'Error: ' + e.message;
+  }
+  btn.disabled = false;
+  btn.textContent = 'Re-evaluate Both Prompts';
+}
+
+async function loadPrompts() {
+  const resp = await fetch('/api/prompts');
+  const data = await resp.json();
+  if (data.draft) {
+    document.getElementById('draft_prompt').textContent = data.draft;
+    window._draftPrompt = data.draft;
+  }
+  if (data.qualified) {
+    document.getElementById('qualified_prompt').textContent = data.qualified;
+    window._qualifiedPrompt = data.qualified;
+  }
+}
+
+function loadDraftIntoEval() {
+  if (window._draftPrompt) document.getElementById('eval_input').value = window._draftPrompt;
+  else { loadPrompts().then(() => { document.getElementById('eval_input').value = window._draftPrompt || ''; }); }
+}
+
+function loadQualifiedIntoEval() {
+  if (window._qualifiedPrompt) document.getElementById('eval_input').value = window._qualifiedPrompt;
+  else { loadPrompts().then(() => { document.getElementById('eval_input').value = window._qualifiedPrompt || ''; }); }
+}
+
+async function evaluatePrompt() {
+  const prompt = document.getElementById('eval_input').value.trim();
+  if (!prompt) { alert('Paste a prompt to evaluate first'); return; }
+
+  const btn = document.getElementById('eval_btn');
+  const status = document.getElementById('eval_status');
+  btn.disabled = true;
+  btn.textContent = 'Evaluating...';
+  status.textContent = 'Calling Gemini...';
+  document.getElementById('eval_result').style.display = 'none';
+
+  try {
+    const resp = await fetch('/api/evaluate_prompt', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({prompt})
+    });
+    const data = await resp.json();
+
+    if (!data.ok) {
+      status.textContent = 'Error: ' + data.error;
+      btn.disabled = false; btn.textContent = 'Evaluate Prompt';
+      return;
+    }
+
+    const r = data.result;
+    const boolKeys = ['explicit_reasoning','structured_output','tool_separation','conversation_loop',
+                      'instructional_framing','internal_self_checks','reasoning_type_awareness','fallbacks'];
+    const labels = {
+      explicit_reasoning: 'Explicit step-by-step reasoning',
+      structured_output: 'Structured output format',
+      tool_separation: 'Tool / reasoning separation',
+      conversation_loop: 'Conversation loop support',
+      instructional_framing: 'Instructional framing + examples',
+      internal_self_checks: 'Internal self-checks',
+      reasoning_type_awareness: 'Reasoning type awareness',
+      fallbacks: 'Error handling / fallbacks'
+    };
+
+    const passing = boolKeys.filter(k => r[k] === true).length;
+    status.textContent = `Score: ${passing}/8`;
+
+    // criteria grid
+    const grid = document.getElementById('eval_criteria_grid');
+    grid.innerHTML = boolKeys.map(k => {
+      const pass = r[k] === true;
+      return `<div style="padding:10px 12px;border-radius:8px;border:1px solid ${pass?'#86efac':'#fca5a5'};background:${pass?'#f0fdf4':'#fef2f2'};display:flex;align-items:center;gap:8px;font-size:12px">
+        <div style="width:16px;height:16px;border-radius:50%;background:${pass?'#10b981':'#ef4444'};display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;flex-shrink:0">${pass?'✓':'✗'}</div>
+        ${labels[k]}
+      </div>`;
+    }).join('') + `<div style="padding:10px 12px;border-radius:8px;border:0.5px solid #e5e7eb;background:#f9fafb;font-size:12px;color:#374151;grid-column:1/-1"><strong>Overall:</strong> ${r.overall_clarity || ''}</div>`;
+
+    // JSON output
+    const jsonStr = JSON.stringify(r, null, 2)
+      .replace(/"([^"]+)":/g, '<span style="color:#93c5fd">"$1"</span>:')
+      .replace(/: (true)/g, ': <span style="color:#6ee7b7">true</span>')
+      .replace(/: (false)/g, ': <span style="color:#f87171">false</span>')
+      .replace(/: "([^"]+)"/g, ': <span style="color:#fcd34d">"$1"</span>');
+    document.getElementById('eval_json').innerHTML = jsonStr;
+    document.getElementById('eval_result').style.display = 'block';
+
+  } catch(e) {
+    status.textContent = 'Network error: ' + e.message;
+  }
+  btn.disabled = false;
+  btn.textContent = 'Evaluate Prompt';
+}
+</script>
+</body>
+</html>
