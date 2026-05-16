@@ -22,6 +22,10 @@ The qualified prompt enforces:
 - `needs_human_review` list + max-cycle exit with report (fallbacks)
 - Exact enum values enforced: `critical`, `nice_to_have`, `already_strong` (overall clarity)
 
+### My Final Prompt
+
+https://github.com/dine1717/ERA_V3_DR/blob/Session5/prompts/qualified_prompt.txt
+
 ---
 
 ## Pipeline: 8 Stages
