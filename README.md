@@ -6,35 +6,9 @@ An 8-stage agentic pipeline that turns a LinkedIn job URL + your resume into a t
 
 ---
 
-## The Assignment Core: Prompt Qualification
+## Prompt Qualification
+<img width="1890" height="836" alt="Screenshot 2026-05-16 at 11 05 51 AM" src="https://github.com/user-attachments/assets/d0a912bc-f58e-48d7-99f4-32ad14259ae4" />
 
-The `prompts/` folder contains two files that demonstrate the qualification step:
-
-### Draft Prompt (before qualification)
-```
-You are a career assistant. Given a job description and a resume, help the user improve their resume and prepare for interviews.
-
-Look at the job and the resume and find gaps. Rewrite the resume to match the job. Generate interview questions. Help with mock interviews.
-
-Be helpful and professional. Give good advice about what skills are missing. Write better bullet points for the resume. Ask interview questions that are relevant to the job.
-```
-
-### Qualification Score (9-criteria rubric applied by Claude)
-```json
-{
-  "explicit_reasoning": false,
-  "structured_output": false,
-  "tool_separation": false,
-  "conversation_loop": false,
-  "instructional_framing": false,
-  "internal_self_checks": false,
-  "reasoning_type_awareness": false,
-  "fallbacks": false,
-  "overall_clarity": "Prompt is entirely vague. No output schema, no reasoning instructions, no tool boundaries, no self-checks, no examples, no fallback handling. Fails all 8 scored criteria. Needs complete rewrite."
-}
-```
-
-**Result: 0/8 criteria passed → full qualification and rewrite applied**
 
 ### Final Qualified Prompt (after patching — see `prompts/qualified_prompt.txt`)
 The qualified prompt enforces:
