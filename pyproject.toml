@@ -1,0 +1,17 @@
+[project]
+name = "session6-agent6"
+version = "0.1.0"
+description = "EAG Session 6 — four-role agent (Memory / Perception / Decision / Action) over MCP + LLM Gateway V3"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.7",
+    "httpx>=0.27",
+    "python-dotenv>=1.0",
+    "mcp>=1.2.0",
+    "ddgs>=6.0",
+    "tavily-python>=0.5",
+    "crawl4ai>=0.4",
+]
+
+[tool.uv]
+package = false
