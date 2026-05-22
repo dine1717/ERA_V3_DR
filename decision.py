@@ -1,8 +1,16 @@
-"""Decision — one LLM call per iteration. Returns answer | tool_call.
+  """Decision — one LLM call per iteration. Returns answer | tool_call.
 
 Decision sees: one goal, the memory hits, recent history, optionally the bytes
 of an artifact that Perception attached, and the MCP tool list. It returns
 EXACTLY one of: a final-answer string, or a single ToolCall.
+
+V2 NOTE — The original v1 prompt (terse, native tool_calls[] channel) is
+preserved in prompts_legacy.py as DECISION_SYSTEM_V1. The v2 implementation
+below uses structured-output (response_format JSON Schema) with a
+discriminated union — gaining explicit reasoning, reasoning_type tagging,
+self-checks, and fallback rules to satisfy the Prompt Evaluation rubric.
+The tool list is embedded in the user prompt because most providers do not
+support `tools=` and `response_format=` simultaneously.
 """
 from __future__ import annotations
 
@@ -18,26 +26,130 @@ from schemas import DecisionOutput, Goal, MemoryItem, ToolCall
 MAX_ATTACHED_CHARS = 60_000
 
 
-_SYSTEM = """You are DECISION. You are given ONE goal and must produce
-EXACTLY ONE of:
+_SYSTEM = """You are DECISION. You are given ONE goal and you must produce a
+single STRUCTURED OUTPUT that contains both your reasoning and your
+chosen action.
 
-  (a) a final ANSWER as plain text that completes this goal, OR
-  (b) a single TOOL_CALL to make progress.
+═════════════════════════════════════════════════════════════════════
+ YOUR JOB (one sentence)
+═════════════════════════════════════════════════════════════════════
+For the ONE goal in front of you, return either a FINAL ANSWER or a
+SINGLE TOOL CALL — paired with a short reasoning trace explaining the
+choice.
 
-Strict rules:
+═════════════════════════════════════════════════════════════════════
+ REASONING PROCESS — THINK BEFORE YOU ACT
+═════════════════════════════════════════════════════════════════════
+Step 1 — CLASSIFY: tag the kind of work this goal needs as one of:
+         ["lookup", "extraction", "synthesis", "computation",
+          "tool-fetch", "tool-write", "selection"]
+Step 2 — INVENTORY: list what you already have:
+         - is the answer derivable from ATTACHED ARTIFACTS?
+         - is the answer derivable from MEMORY HITS / HISTORY?
+         - if neither, what external work is needed?
+Step 3 — DECIDE: emit EITHER an answer OR one tool_call — never both,
+         never neither.
+Step 4 — SELF-CHECK: confirm
+         (a) no argument starts with "art:" (those are internal
+             handles — pass the real URL/path/query instead),
+         (b) if answering an extraction / list / comparison / selection
+             goal, the answer is ≥ 3 sentences OR a clear list,
+         (c) you are not narrating "I will now call the tool" — you
+             either call it, or you answer.
 
-- Do not narrate. Do not say "I will now call the tool." Just call it.
-- Strings beginning with "art:" are internal artifact handles. NEVER pass an
-  art: string as a `path`, `url`, or any tool argument. If you need the bytes
-  of an artifact, they are already in the ATTACHED ARTIFACTS section below.
-- For extraction / listing / comparison / selection goals: your ANSWER must
-  be SUBSTANTIVE — at least three full sentences or a clear bulleted list.
-  Never reply with a meta-statement like "the page is fetched, how would you
-  like to proceed?". Do the work.
-- Prefer to ANSWER when ATTACHED ARTIFACTS already contains everything you
-  need. Only call a tool when external work is genuinely required.
-- When you call a tool, pass real URLs / paths / queries, not handles.
-"""
+═════════════════════════════════════════════════════════════════════
+ HARD RULES
+═════════════════════════════════════════════════════════════════════
+R1  EXACTLY ONE OF (answer | tool_call). Never both. Never neither.
+
+R2  ART-HANDLE GUARD: strings beginning with "art:" are INTERNAL
+    artifact handles. NEVER pass an art: string as a path, url, or
+    any tool argument. If you need artifact bytes, they are already
+    in the ATTACHED ARTIFACTS section.
+
+R3  SUBSTANTIVE ANSWER: extraction / listing / comparison / selection
+    goals require ≥ 3 full sentences OR a clear bulleted list. Never
+    return a meta-statement like "the page is fetched, how would you
+    like to proceed?". Do the work.
+
+R4  PREFER ANSWERING when ATTACHED ARTIFACTS already contain the
+    information needed. Only call a tool when external work is
+    genuinely required.
+
+R5  REAL ARGUMENTS: pass real URLs / paths / queries to tools, never
+    handles.
+
+═════════════════════════════════════════════════════════════════════
+ FALLBACKS — WHAT TO DO WHEN UNCERTAIN
+═════════════════════════════════════════════════════════════════════
+F1  If the goal is partially answerable from what you have but you
+    are missing one specific fact → ANSWER with what you know AND
+    mark the missing piece explicitly (e.g. "Birth date: …;
+    Contributions: cannot determine from the attached source.").
+
+F2  If a previous tool failed (HISTORY shows ERROR:) → do NOT retry
+    the same call with the same arguments. Either ANSWER with a
+    note about the failure, or call a DIFFERENT tool.
+
+F3  If ATTACHED ARTIFACTS contradict MEMORY HITS, trust ATTACHED.
+
+F4  If you cannot decide which tool to use → choose the one whose
+    description most literally matches the goal verb.
+
+═════════════════════════════════════════════════════════════════════
+ OUTPUT FORMAT — JSON ONLY, matching the supplied schema.
+═════════════════════════════════════════════════════════════════════"""
+
+
+# Discriminated-union response schema. `decision.kind` selects the variant:
+#   "answer"    → use `decision.text`
+#   "tool_call" → use `decision.name` + `decision.arguments`
+_DECISION_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "reasoning_type": {
+            "type": "string",
+            "enum": [
+                "lookup", "extraction", "synthesis", "computation",
+                "tool-fetch", "tool-write", "selection",
+            ],
+            "description": "What kind of work this goal needs.",
+        },
+        "reasoning": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "2-5 short bullet lines of internal reasoning.",
+        },
+        "self_check": {
+            "type": "string",
+            "description": "'ok' or a short concern if a self-check rule could not be satisfied.",
+        },
+        "decision": {
+            "type": "object",
+            "properties": {
+                "kind": {"type": "string", "enum": ["answer", "tool_call"]},
+                "text": {
+                    "type": "string",
+                    "description": "Populated when kind='answer'. The substantive answer.",
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Populated when kind='tool_call'. Name of the tool from the available tool list.",
+                },
+                "arguments": {
+                    "type": "object",
+                    "additionalProperties": True,
+                    "description": "Populated when kind='tool_call'. Arguments matching the tool's input_schema.",
+                },
+            },
+            "required": ["kind"],
+        },
+    },
+    "required": ["reasoning_type", "reasoning", "self_check", "decision"],
+}
+
+
+# ---------------- formatting helpers ----------------
 
 
 def _format_hits(hits: list[MemoryItem], limit: int = 8) -> str:
@@ -83,6 +195,26 @@ def _format_attached(attached: list[tuple[str, bytes]]) -> str:
     return "\n\n".join(parts)
 
 
+def _format_tools(mcp_tools: list[dict]) -> str:
+    """Render the MCP tool list as a compact text block for the user prompt.
+
+    With response_format set, the gateway will not pass tools= to the
+    provider, so the model needs the tool descriptions embedded here.
+    """
+    if not mcp_tools:
+        return "(no tools available)"
+    lines = []
+    for t in mcp_tools:
+        name = t.get("name", "?")
+        desc = (t.get("description") or "").strip()
+        schema_json = json.dumps(t.get("input_schema") or {}, separators=(",", ":"))
+        lines.append(f"- {name}: {desc}\n    input_schema: {schema_json}")
+    return "\n".join(lines)
+
+
+# ---------------- entry point ----------------
+
+
 def next_step(
     goal: Goal,
     hits: list[MemoryItem],
@@ -92,32 +224,49 @@ def next_step(
 ) -> DecisionOutput:
     prompt = (
         f"GOAL:\n{goal.text}\n\n"
+        f"AVAILABLE TOOLS:\n{_format_tools(mcp_tools)}\n\n"
         f"MEMORY HITS:\n{_format_hits(hits)}\n\n"
         f"RECENT HISTORY:\n{_format_history(history)}\n\n"
         f"ATTACHED ARTIFACTS:\n{_format_attached(attached)}\n\n"
-        f"Now: ANSWER if you can finish this goal from what is above, "
-        f"otherwise call ONE tool."
+        f"Now produce the JSON output. ANSWER if you can finish this goal "
+        f"from what is above; otherwise emit a tool_call selecting exactly "
+        f"ONE of the AVAILABLE TOOLS."
     )
 
-    resp = gw.chat(
+    out = gw.structured(
         prompt=prompt,
         system=_SYSTEM,
-        tools=mcp_tools,
-        tool_choice="auto",
+        schema=_DECISION_SCHEMA,
         auto_route="decision",
         temperature=0.7,
         max_tokens=1500,
     )
+    parsed = out.get("parsed") or {}
+    decision = parsed.get("decision") or {}
+    kind = (decision.get("kind") or "").strip().lower()
 
-    tool_calls = resp.get("tool_calls") or []
-    if tool_calls:
-        tc = tool_calls[0]
-        return DecisionOutput(
-            answer=None,
-            tool_call=ToolCall(name=tc["name"], arguments=tc.get("arguments", {}) or {}),
-        )
+    if kind == "tool_call":
+        name = (decision.get("name") or "").strip()
+        arguments = decision.get("arguments") or {}
+        if name:
+            return DecisionOutput(
+                answer=None,
+                tool_call=ToolCall(name=name, arguments=arguments),
+            )
+        # Malformed tool_call → fall through to answer
 
-    text = (resp.get("text") or "").strip()
-    if not text:
-        text = "(no answer produced)"
-    return DecisionOutput(answer=text, tool_call=None)
+    if kind == "answer":
+        text = (decision.get("text") or "").strip()
+        if not text:
+            text = "(no answer produced)"
+        return DecisionOutput(answer=text, tool_call=None)
+
+    # Last-resort fallback: the model produced something we can't parse as
+    # either an answer or a tool call. Return the raw text channel so the
+    # loop can surface it in history; Perception will see the goal still
+    # unfinished and try again.
+    raw_text = (out.get("raw", {}).get("text") if isinstance(out.get("raw"), dict) else "") or ""
+    return DecisionOutput(
+        answer=raw_text.strip() or "(decision could not be parsed)",
+        tool_call=None,
+    )
